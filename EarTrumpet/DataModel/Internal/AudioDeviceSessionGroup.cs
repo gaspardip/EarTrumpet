@@ -89,7 +89,8 @@ namespace EarTrumpet.DataModel.Internal
             // Update the output for all processes represented by this app.
             foreach (var pid in _sessions.Select(c => c.ProcessId).ToSet())
             {
-                AudioPolicyConfigService.SetDefaultEndPoint(id, pid);
+                var session = _sessions.First(s => s.ProcessId == pid);
+                session.MoveToDevice(id, hideExistingSessions);
             }
 
             if (hideExistingSessions)

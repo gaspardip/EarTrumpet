@@ -4,6 +4,7 @@ namespace EarTrumpet.DataModel
 {
     interface IAudioDevice : IStreamWithVolumeControl
     {
+        IAudioDeviceManager Parent { get; }
         string DisplayName { get; }
 
         ObservableCollection<IAudioDeviceSession> Groups { get; }

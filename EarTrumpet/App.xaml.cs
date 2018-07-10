@@ -30,7 +30,7 @@ namespace EarTrumpet
 
             ((ThemeManager)Resources["ThemeManager"]).SetTheme(ThemeData.GetBrushData());
 
-            var deviceManager = DataModelFactory.CreateAudioDeviceManager();
+            var deviceManager = DataModelFactory.CreateAudioDeviceManager(AudioDeviceKind.Playback);
             DiagnosticsService.Advise(deviceManager);
 
             _viewModel = new MainViewModel(deviceManager);

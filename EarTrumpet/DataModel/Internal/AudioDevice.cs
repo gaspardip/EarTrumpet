@@ -24,10 +24,12 @@ namespace EarTrumpet.DataModel.Internal
         private float _volume;
         private bool _isMuted;
         private bool _isRegistered;
+        private WeakReference<IAudioDeviceManager> _parent;
 
-        public AudioDevice(IMMDevice device)
+        public AudioDevice(IMMDevice device, IAudioDeviceManager parent)
         {
             _device = device;
+            _parent = new WeakReference<IAudioDeviceManager>(parent);
             _dispatcher = App.Current.Dispatcher;
             _id = device.GetId();
 
@@ -125,6 +127,18 @@ namespace EarTrumpet.DataModel.Internal
         public ObservableCollection<IAudioDeviceSession> Groups => _sessions.Sessions;
 
         public string DisplayName => _displayName;
+
+        public IAudioDeviceManager Parent
+        {
+            get
+            {
+                if (_parent.TryGetTarget(out var ret))
+                {
+                    return ret;
+                }
+                return null;
+            }
+        }
 
         public void UpdatePeakValueBackground()
         {

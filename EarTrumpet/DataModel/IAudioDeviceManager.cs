@@ -9,8 +9,11 @@ namespace EarTrumpet.DataModel
         event EventHandler Loaded;
 
         IAudioDevice Default { get; set; }
+        AudioDeviceKind DeviceKind { get; }
         ObservableCollection<IAudioDevice> Devices { get; }
 
         void MoveHiddenAppsToDevice(string appId, string id);
+        string GetDefaultEndPoint(int processId);
+        void SetDefaultEndPoint(string id, int processId);
     }
 }

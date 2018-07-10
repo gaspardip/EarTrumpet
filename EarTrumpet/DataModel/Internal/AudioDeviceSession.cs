@@ -149,7 +149,17 @@ namespace EarTrumpet.DataModel.Internal
 
         public bool IsSystemSoundsSession { get; }
 
-        public string PersistedDefaultEndPointId => AudioPolicyConfigService.GetDefaultEndPoint(ProcessId);
+        public string PersistedDefaultEndPointId
+        {
+            get
+            {
+                if (_parent.TryGetTarget(out var parent))
+                {
+                    return parent.Parent.GetDefaultEndPoint(ProcessId);
+                }
+                return null;
+            }
+        }
 
         public ObservableCollection<IAudioDeviceSession> Children { get; private set; }
 
@@ -170,11 +180,13 @@ namespace EarTrumpet.DataModel.Internal
         private bool _moveOnInactive;
         private bool _isRegistered;
         private Task _refreshDisplayNameTask;
+        private WeakReference<IAudioDevice> _parent;
 
         public AudioDeviceSession(IAudioDevice parent, IAudioSessionControl session)
         {
             _dispatcher = App.Current.Dispatcher;
             _session = session;
+            _parent = new WeakReference<IAudioDevice>(parent);
             _meter = (IAudioMeterInformation)_session;
             _simpleVolume = (ISimpleAudioVolume)session;
             _state = _session.GetState();
@@ -265,7 +277,10 @@ namespace EarTrumpet.DataModel.Internal
 
         public void MoveToDevice(string id, bool hide)
         {
-            AudioPolicyConfigService.SetDefaultEndPoint(id, ProcessId);
+            if (_parent.TryGetTarget(out var parent))
+            {
+                parent.Parent.SetDefaultEndPoint(id, ProcessId);
+            }
         }
 
         public void UpdatePeakValueBackground()
