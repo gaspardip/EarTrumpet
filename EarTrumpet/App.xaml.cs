@@ -42,14 +42,17 @@ namespace EarTrumpet
             _playbackFlyoutWindow = new FlyoutWindow(playbackViewModel, new FlyoutViewModel(playbackViewModel));
             _playbackTrayIcon = new TrayIcon(new TrayViewModel(playbackViewModel));
 
-            var recordingDeviceManager = DataModelFactory.CreateAudioDeviceManager(AudioDeviceKind.Recording);
-            DiagnosticsService.Advise(recordingDeviceManager);
+            if (IsMouthFeatureEnabled())
+            {
+                var recordingDeviceManager = DataModelFactory.CreateAudioDeviceManager(AudioDeviceKind.Recording);
+                DiagnosticsService.Advise(recordingDeviceManager);
 
-            var recordingViewModel = new MainViewModel(recordingDeviceManager);
-            recordingViewModel.Ready += RecordingViewModel_Ready;
+                var recordingViewModel = new MainViewModel(recordingDeviceManager);
+                recordingViewModel.Ready += RecordingViewModel_Ready;
 
-            _recordingFlyoutWindow = new FlyoutWindow(recordingViewModel, new FlyoutViewModel(recordingViewModel));
-            _recordingTrayIcon = new TrayIcon(new TrayViewModel(recordingViewModel));
+                _recordingFlyoutWindow = new FlyoutWindow(recordingViewModel, new FlyoutViewModel(recordingViewModel));
+                _recordingTrayIcon = new TrayIcon(new TrayViewModel(recordingViewModel));
+            }
 
             Trace.WriteLine($"App Application_Startup Exit");
         }
@@ -64,6 +67,11 @@ namespace EarTrumpet
         {
             Trace.WriteLine("App RecordingViewModel_Ready");
             _recordingTrayIcon.Show();
+        }
+
+        public static bool IsMouthFeatureEnabled()
+        {
+            return true;
         }
     }
 }

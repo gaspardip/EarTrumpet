@@ -214,6 +214,15 @@ namespace EarTrumpet.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to MouthTrumpet: No recording devices.
+        /// </summary>
+        public static string MouthTrumpetNoDevicesText {
+            get {
+                return ResourceManager.GetString("MouthTrumpetNoDevicesText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Assign this app to a playback device.
         /// </summary>
         public static string MoveButtonAccessibleText {

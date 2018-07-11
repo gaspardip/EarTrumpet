@@ -212,4 +212,7 @@
   <data name="SettingsUseLegacyEarTrumpetIcon" xml:space="preserve">
     <value>Use legacy EarTrumpet icon</value>
   </data>
+  <data name="MouthTrumpetNoDevicesText" xml:space="preserve">
+    <value>MouthTrumpet: No recording devices</value>
+  </data>
 </root>

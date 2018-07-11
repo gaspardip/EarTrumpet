@@ -183,7 +183,7 @@ namespace EarTrumpet.UI.ViewModels
                 // TODO: microphone icon
                 desiredIcon = IconId.OriginalIcon;
             }
-            if (_useLegacyIcon)
+            else if (_useLegacyIcon)
             {
                 desiredIcon = IconId.OriginalIcon;
             }
@@ -238,17 +238,16 @@ namespace EarTrumpet.UI.ViewModels
             string toolTipText;
             if (_defaultDevice != null)
             {
-                // TODO: need text
-                var otherText = "EarTrumpet: 100% - ";
+                var trumpet = (_mainViewModel.DeviceKind == AudioDeviceKind.Recording) ? "Mouth" : "Ear";
+                var otherText = $"{trumpet}Trumpet: 100% - ";
                 var dev = _defaultDevice.DisplayName;
                 // API Limitation: "less than 64 chars" for the tooltip.
                 dev = dev.Substring(0, Math.Min(63 - otherText.Length, dev.Length));
-                toolTipText = $"EarTrumpet: {_defaultDevice.Volume}% - {dev}";
+                toolTipText = $"{trumpet}Trumpet: {_defaultDevice.Volume}% - {dev}";
             }
             else
             {
-                // TODO: need resource
-                toolTipText = Resources.NoDeviceTrayText;
+                toolTipText = (_mainViewModel.DeviceKind == AudioDeviceKind.Recording) ? Resources.MouthTrumpetNoDevicesText : Resources.NoDeviceTrayText;
             }
 
             if (toolTipText != ToolTip)
