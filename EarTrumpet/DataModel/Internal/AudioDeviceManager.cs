@@ -29,12 +29,11 @@ namespace EarTrumpet.DataModel.Internal
 
         public AudioDeviceManager(Dispatcher dispatcher, AudioDeviceKind flow)
         {
-            Trace.WriteLine("AudioDeviceManager Create");
-
             _dispatcher = dispatcher;
             _flow = flow == AudioDeviceKind.Playback ? EDataFlow.eRender : EDataFlow.eCapture;
-
             _configService = new AudioPolicyConfigService(flow);
+
+            TraceLine($"Create");
 
             Task.Factory.StartNew(() =>
             {
@@ -63,7 +62,7 @@ namespace EarTrumpet.DataModel.Internal
                 }
             });
 
-            Trace.WriteLine("AudioDeviceManager Create Exit");
+            TraceLine($"Create Exit");
         }
 
         ~AudioDeviceManager()
@@ -80,7 +79,7 @@ namespace EarTrumpet.DataModel.Internal
 
         private void QueryDefaultDevice()
         {
-            Trace.WriteLine("AudioDeviceManager QueryDefaultDevice");
+            TraceLine($"QueryDefaultDevice");
             IMMDevice device = null;
             try
             {
@@ -120,7 +119,7 @@ namespace EarTrumpet.DataModel.Internal
 
         private void SetDefaultDevice(IAudioDevice device)
         {
-            Trace.WriteLine($"AudioDeviceManager SetDefaultDevice {device.Id}");
+            TraceLine($"SetDefaultDevice {device.Id}");
 
             if (s_PolicyConfigClient == null)
             {
@@ -160,7 +159,7 @@ namespace EarTrumpet.DataModel.Internal
 
         void IMMNotificationClient.OnDeviceAdded(string pwstrDeviceId)
         {
-            Trace.WriteLine($"AudioDeviceManager OnDeviceAdded {pwstrDeviceId}");
+            TraceLine($"OnDeviceAdded {pwstrDeviceId}");
 
             if (!FindDevice(pwstrDeviceId, out IAudioDevice unused))
             {
@@ -192,7 +191,7 @@ namespace EarTrumpet.DataModel.Internal
 
         void IMMNotificationClient.OnDeviceRemoved(string pwstrDeviceId)
         {
-            Trace.WriteLine($"AudioDeviceManager OnDeviceRemoved {pwstrDeviceId}");
+            TraceLine($"OnDeviceRemoved {pwstrDeviceId}");
 
             _dispatcher.BeginInvoke((Action)(() =>
             {
@@ -205,7 +204,7 @@ namespace EarTrumpet.DataModel.Internal
 
         void IMMNotificationClient.OnDefaultDeviceChanged(EDataFlow flow, ERole role, string pwstrDefaultDeviceId)
         {
-            Trace.WriteLine($"AudioDeviceManager OnDefaultDeviceChanged {pwstrDefaultDeviceId}");
+            TraceLine($"OnDefaultDeviceChanged {pwstrDefaultDeviceId}");
 
             _dispatcher.BeginInvoke((Action)(() =>
             {
@@ -215,7 +214,7 @@ namespace EarTrumpet.DataModel.Internal
 
         void IMMNotificationClient.OnDeviceStateChanged(string pwstrDeviceId, DeviceState dwNewState)
         {
-            Trace.WriteLine($"AudioDeviceManager OnDeviceStateChanged {pwstrDeviceId} {dwNewState}");
+            TraceLine($"OnDeviceStateChanged {pwstrDeviceId} {dwNewState}");
             switch (dwNewState)
             {
                 case DeviceState.ACTIVE:
@@ -234,7 +233,7 @@ namespace EarTrumpet.DataModel.Internal
 
         void IMMNotificationClient.OnPropertyValueChanged(string pwstrDeviceId, PROPERTYKEY key)
         {
-            Trace.WriteLine($"AudioDeviceManager OnPropertyValueChanged {pwstrDeviceId} {key.fmtid}{key.pid}");
+            TraceLine($"OnPropertyValueChanged {pwstrDeviceId} {key.fmtid}{key.pid}");
             if (FindDevice(pwstrDeviceId, out IAudioDevice dev))
             {
                 if (PropertyKeys.PKEY_AudioEndPoint_Interface.Equals(key))
@@ -260,6 +259,11 @@ namespace EarTrumpet.DataModel.Internal
         public void SetDefaultEndPoint(string id, int processId)
         {
             _configService.SetDefaultEndPoint(id, processId);
+        }
+
+        private void TraceLine(string msg)
+        {
+            Trace.WriteLine($"AudioDeviceManager-{_flow}: {msg}");
         }
     }
 }

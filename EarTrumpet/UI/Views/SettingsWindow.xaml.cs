@@ -80,17 +80,40 @@ namespace EarTrumpet.UI.Views
         {
             Trace.WriteLine("SettingsWindow HotkeySelect_Click");
 
-            HotkeyService.Unregister();
+            HotkeyService.Unbind(HotkeyService.HotkeyKind.PlaybackFlyout);
 
-            var win = new HotkeySelectionWindow();
-            win.Owner = this;
-            win.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var win = new HotkeySelectionWindow
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            };
+
             if ((bool)win.ShowDialog())
             {
-                _viewModel.Hotkey = win.Hotkey;
+                _viewModel.PlaybackFlyoutHotkey = win.Hotkey;
             }
 
-            HotkeyService.Register(_viewModel.Hotkey);
+            HotkeyService.Bind(HotkeyService.HotkeyKind.PlaybackFlyout, _viewModel.PlaybackFlyoutHotkey);
+        }
+
+        private void RecordingHotkeySelect_Click(object sender, RoutedEventArgs e)
+        {
+            Trace.WriteLine("SettingsWindow RecordingHotkeySelect_Click");
+
+            HotkeyService.Unbind(HotkeyService.HotkeyKind.RecordingFlyout);
+
+            var win = new HotkeySelectionWindow
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            };
+
+            if ((bool)win.ShowDialog())
+            {
+                _viewModel.RecordingFlyoutHotkey = win.Hotkey;
+            }
+
+            HotkeyService.Bind(HotkeyService.HotkeyKind.RecordingFlyout, _viewModel.RecordingFlyoutHotkey);
         }
     }
 }

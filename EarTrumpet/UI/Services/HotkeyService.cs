@@ -1,29 +1,49 @@
 ﻿using EarTrumpet.Interop.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace EarTrumpet.UI.Services
 {
     class HotkeyService
     {
-        public static event EventHandler<KeyboardHook.KeyPressedEventArgs> KeyPressed;
+        public enum HotkeyKind
+        {
+            PlaybackFlyout,
+            RecordingFlyout,
+        }
+
+        public static event Action<HotkeyKind> Pressed;
 
         private static KeyboardHook s_hook;
+        private static Dictionary<HotkeyKind, Tuple<int, SettingsService.HotkeyData>> s_hotkeys = new Dictionary<HotkeyKind, Tuple<int, SettingsService.HotkeyData>>();
 
-        public static void Register(SettingsService.HotkeyData hotkey)
+        public static void Bind(HotkeyKind kind, SettingsService.HotkeyData hotkey)
         {
-            Trace.WriteLine($"HotkeyService Register {hotkey}");
-            if (s_hook != null)
+            Trace.WriteLine($"HotkeyService Register {kind} {hotkey}");
+
+            if (hotkey.Key == System.Windows.Forms.Keys.None)
             {
-                s_hook.Dispose();
+                return;
             }
 
-            s_hook = new KeyboardHook();
-            s_hook.KeyPressed += Hotkey_KeyPressed;
+            if (s_hook == null)
+            {
+                s_hook = new KeyboardHook();
+                s_hook.KeyPressed += Hotkey_KeyPressed;
+            }
+
+            if (s_hotkeys.ContainsKey(kind))
+            {
+                s_hook.Remove(s_hotkeys[kind].Item1);
+                s_hotkeys.Remove(kind);
+            }
 
             try
             {
-                s_hook.RegisterHotKey(hotkey.Key, hotkey.Modifiers);
+                var id = s_hook.Add(hotkey.Key, hotkey.Modifiers);
+                s_hotkeys.Add(kind, new Tuple<int, SettingsService.HotkeyData>(id, hotkey));
             }
             catch (Exception ex)
             {
@@ -34,16 +54,26 @@ namespace EarTrumpet.UI.Services
         private static void Hotkey_KeyPressed(object sender, KeyboardHook.KeyPressedEventArgs e)
         {
             Trace.WriteLine($"HotkeyService Hotkey_KeyPressed");
-            KeyPressed?.Invoke(s_hook, e);
+
+            foreach(var hotkey in s_hotkeys)
+            {
+                if (hotkey.Value.Item2.Key == e.Key &&
+                    hotkey.Value.Item2.Modifiers == e.Modifiers)
+                {
+                    Pressed?.Invoke(hotkey.Key);
+                    break;
+                }
+            }
         }
 
-        public static void Unregister()
+        public static void Unbind(HotkeyKind kind)
         {
-            Trace.WriteLine($"HotkeyService Unregister");
+            Trace.WriteLine($"HotkeyService Unbind {kind}");
 
-            if (s_hook != null)
+            if (s_hotkeys.ContainsKey(kind))
             {
-                s_hook.Dispose();
+                s_hook.Remove(s_hotkeys[kind].Item1);
+                s_hotkeys.Remove(kind);
             }
         }
     }

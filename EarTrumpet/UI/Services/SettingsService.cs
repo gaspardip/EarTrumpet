@@ -25,6 +25,7 @@ namespace EarTrumpet.UI.Services
         public static event EventHandler<bool> UseLegacyIconChanged;
 
         public static readonly HotkeyData s_defaultPlaybackHotkey = new HotkeyData { Modifiers = Keys.Shift | Keys.Control, Key = System.Windows.Forms.Keys.Q };
+        public static readonly HotkeyData s_defaultRecordingHotkey = new HotkeyData { Modifiers = Keys.Shift | Keys.Control, Key = System.Windows.Forms.Keys.W };
 
         public static HotkeyData PlaybackFlyoutHotkey
         {
@@ -36,6 +37,19 @@ namespace EarTrumpet.UI.Services
             set
             {
                 WriteSetting("Hotkey", value);
+            }
+        }
+
+        public static HotkeyData RecordingFlyoutHotkey
+        {
+            get
+            {
+                var ret = ReadSetting("Hotkey_RecordingFlyout", s_defaultRecordingHotkey);
+                return ret;
+            }
+            set
+            {
+                WriteSetting("Hotkey_RecordingFlyout", value);
             }
         }
 
@@ -57,6 +71,25 @@ namespace EarTrumpet.UI.Services
                 WriteSetting("UseLegacyIcon", value.ToString());
 
                 UseLegacyIconChanged?.Invoke(null, UseLegacyIcon);
+            }
+        }
+
+        public static bool IsMouthTrumpetEnabled
+        {
+            get
+            {
+                var ret = ReadSetting("IsMouthTrumpetEnabled");
+                if (ret == null)
+                {
+                    return false;
+                }
+
+                bool.TryParse(ret, out bool isUseLegacyIcon);
+                return isUseLegacyIcon;
+            }
+            set
+            {
+                WriteSetting("IsMouthTrumpetEnabled", value.ToString());
             }
         }
 

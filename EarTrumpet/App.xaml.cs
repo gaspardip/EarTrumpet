@@ -42,7 +42,7 @@ namespace EarTrumpet
             _playbackFlyoutWindow = new FlyoutWindow(playbackViewModel, new FlyoutViewModel(playbackViewModel));
             _playbackTrayIcon = new TrayIcon(new TrayViewModel(playbackViewModel));
 
-            if (IsMouthFeatureEnabled())
+            if (SettingsService.IsMouthTrumpetEnabled)
             {
                 var recordingDeviceManager = DataModelFactory.CreateAudioDeviceManager(AudioDeviceKind.Recording);
                 DiagnosticsService.Advise(recordingDeviceManager);
@@ -67,11 +67,6 @@ namespace EarTrumpet
         {
             Trace.WriteLine("App RecordingViewModel_Ready");
             _recordingTrayIcon.Show();
-        }
-
-        public static bool IsMouthFeatureEnabled()
-        {
-            return true;
         }
     }
 }

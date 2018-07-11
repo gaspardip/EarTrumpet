@@ -92,10 +92,16 @@
 
                 <TextBlock Style="{StaticResource HeadingText}" Text="{x:Static resx:Resources.KeyboardShortcutsTitle}" />
 
-                <CheckBox Margin="0,12,0,18"
+                <CheckBox Margin="0,2,0,12"
                           HorizontalAlignment="Left"
                           Content="{x:Static resx:Resources.SettingsUseLegacyEarTrumpetIcon}"
                           IsChecked="{Binding UseLegacyIcon, Mode=TwoWay}"
+                          Style="{StaticResource CheckboxStyle}" />
+
+                <CheckBox Margin="0,6,0,12"
+                          HorizontalAlignment="Left"
+                          Content="{x:Static resx:Resources.SettingsIsMouthTrumpetEnabled}"
+                          IsChecked="{Binding IsMouthTrumpetEnabled, Mode=TwoWay}"
                           Style="{StaticResource CheckboxStyle}" />
 
                 <TextBlock Style="{StaticResource BodyText}" Text="{x:Static resx:Resources.SettingsOpenEarTrumpetText}" />
@@ -111,14 +117,16 @@
                         <ColumnDefinition Width="Auto" MinWidth="140" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock VerticalAlignment="Center"
+                    <TextBlock Margin="0,6,12,0"
+                               VerticalAlignment="Center"
                                Style="{StaticResource BodySubText}"
                                Text="{x:Static resx:Resources.DefaultHotkeyDescriptionText}" />
 
                     <TextBlock Grid.Column="1"
+                               Margin="0,6,0,0"
                                VerticalAlignment="Center"
                                Style="{StaticResource BodyText}"
-                               Text="{Binding DefaultHotKey}" />
+                               Text="{Binding DefaultPlaybackFlyoutHotKey}" />
 
                     <TextBlock Grid.Row="1"
                                VerticalAlignment="Center"
@@ -130,14 +138,52 @@
                             MinWidth="140"
                             HorizontalAlignment="Left"
                             Click="HotkeySelect_Click"
-                            Content="{Binding HotkeyText}"
+                            Content="{Binding PlaybackFlyoutHotkeyText}"
                             Foreground="{Binding ElementName=WindowRoot, Path=Foreground}"
                             Style="{StaticResource Windows10ButtonStyle}" />
-
-
                 </Grid>
 
-                <StackPanel Orientation="Horizontal" />
+                <TextBlock Margin="0,12,0,0"
+                           Style="{StaticResource BodyText}"
+                           Text="{x:Static resx:Resources.SettingsOpenMouthTrumpetText}" />
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="34" />
+                        <RowDefinition Height="34" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MinWidth="140" />
+                        <ColumnDefinition Width="Auto" MinWidth="140" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Margin="0,6,12,0"
+                               VerticalAlignment="Center"
+                               Style="{StaticResource BodySubText}"
+                               Text="{x:Static resx:Resources.DefaultHotkeyDescriptionText}" />
+
+                    <TextBlock Grid.Column="1"
+                               Margin="0,6,0,0"
+                               VerticalAlignment="Center"
+                               Style="{StaticResource BodyText}"
+                               Text="{Binding DefaultRecordingFlyoutHotKey}" />
+
+                    <TextBlock Grid.Row="1"
+                               VerticalAlignment="Center"
+                               Style="{StaticResource BodySubText}"
+                               Text="{x:Static resx:Resources.HotkeyDescriptionText}" />
+
+                    <Button Grid.Row="1"
+                            Grid.Column="1"
+                            MinWidth="140"
+                            HorizontalAlignment="Left"
+                            Click="RecordingHotkeySelect_Click"
+                            Content="{Binding RecordingFlyoutHotkeyText}"
+                            Foreground="{Binding ElementName=WindowRoot, Path=Foreground}"
+                            Style="{StaticResource Windows10ButtonStyle}" />
+                </Grid>
+
                 <TextBlock Style="{StaticResource HeadingText}" Text="{x:Static resx:Resources.AboutTitle}" />
                 <StackPanel Orientation="Horizontal">
 

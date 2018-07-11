@@ -286,11 +286,29 @@ namespace EarTrumpet.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add MouthTrumpet icon to the notification area (restart required).
+        /// </summary>
+        public static string SettingsIsMouthTrumpetEnabled {
+            get {
+                return ResourceManager.GetString("SettingsIsMouthTrumpetEnabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open EarTrumpet flyout.
         /// </summary>
         public static string SettingsOpenEarTrumpetText {
             get {
                 return ResourceManager.GetString("SettingsOpenEarTrumpetText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open MouthTrumpet flyout.
+        /// </summary>
+        public static string SettingsOpenMouthTrumpetText {
+            get {
+                return ResourceManager.GetString("SettingsOpenMouthTrumpetText", resourceCulture);
             }
         }
         

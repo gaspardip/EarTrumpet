@@ -39,8 +39,26 @@ namespace EarTrumpet.UI.ViewModels
             _peakMeterTimer.AutoReset = true;
             _peakMeterTimer.Elapsed += PeakMeterTimer_Elapsed;
 
-            HotkeyService.Register(SettingsService.PlaybackFlyoutHotkey);
-            HotkeyService.KeyPressed += (_, __) => OpenFlyout(FlyoutShowOptions.Keyboard);
+            BindHotkey();
+        }
+
+        private void BindHotkey()
+        {
+            HotkeyService.Pressed += HotkeyService_Pressed;
+
+            var isPlayback = _deviceManager.DeviceKind == AudioDeviceKind.Playback;
+            HotkeyService.Bind(
+                isPlayback ? HotkeyService.HotkeyKind.PlaybackFlyout : HotkeyService.HotkeyKind.RecordingFlyout,
+                isPlayback ? SettingsService.PlaybackFlyoutHotkey : SettingsService.RecordingFlyoutHotkey);
+        }
+
+        private void HotkeyService_Pressed(HotkeyService.HotkeyKind kind)
+        {
+            if (kind == HotkeyService.HotkeyKind.PlaybackFlyout && _deviceManager.DeviceKind == AudioDeviceKind.Playback ||
+                kind == HotkeyService.HotkeyKind.RecordingFlyout && _deviceManager.DeviceKind == AudioDeviceKind.Recording)
+            {
+                OpenFlyout(FlyoutShowOptions.Keyboard);
+            }
         }
 
         private void DeviceManager_Loaded(object sender, EventArgs e)
@@ -125,9 +143,9 @@ namespace EarTrumpet.UI.ViewModels
             var apps = new List<IAppItemViewModel>();
             apps.Add(app);
 
-            foreach(var device in Devices)
+            foreach (var device in Devices)
             {
-                foreach(var deviceApp in device.Apps)
+                foreach (var deviceApp in device.Apps)
                 {
                     if (deviceApp.DoesGroupWith(app))
                     {
@@ -140,7 +158,7 @@ namespace EarTrumpet.UI.ViewModels
                 }
             }
 
-            foreach(var foundApp in apps)
+            foreach (var foundApp in apps)
             {
                 MoveAppToDeviceInternal(foundApp, dev);
             }
@@ -165,7 +183,7 @@ namespace EarTrumpet.UI.ViewModels
 
                 var tempApp = new TemporaryAppItemViewModel(app, _deviceManager);
 
-                app.MoveToDevice(dev?.Id, hide:isLogicallyMovingDevices);
+                app.MoveToDevice(dev?.Id, hide: isLogicallyMovingDevices);
 
                 // Update the UI if the device logically changed places.
                 if (isLogicallyMovingDevices)

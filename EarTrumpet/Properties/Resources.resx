@@ -215,4 +215,10 @@
   <data name="MouthTrumpetNoDevicesText" xml:space="preserve">
     <value>MouthTrumpet: No recording devices</value>
   </data>
+  <data name="SettingsIsMouthTrumpetEnabled" xml:space="preserve">
+    <value>Add MouthTrumpet icon to the notification area (restart required)</value>
+  </data>
+  <data name="SettingsOpenMouthTrumpetText" xml:space="preserve">
+    <value>Open MouthTrumpet flyout</value>
+  </data>
 </root>

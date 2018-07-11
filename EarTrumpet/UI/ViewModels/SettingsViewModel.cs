@@ -2,7 +2,6 @@
 using EarTrumpet.UI.Helpers;
 using EarTrumpet.UI.Services;
 using System;
-using System.Diagnostics;
 using System.Windows.Input;
 using Windows.ApplicationModel;
 
@@ -10,21 +9,38 @@ namespace EarTrumpet.UI.ViewModels
 {
     public class SettingsViewModel : BindableBase
     {
-        SettingsService.HotkeyData _hotkey;
-        internal SettingsService.HotkeyData Hotkey
+        SettingsService.HotkeyData _playbackFlyoutHotkey;
+        internal SettingsService.HotkeyData PlaybackFlyoutHotkey
         {
-            get => _hotkey;
+            get => _playbackFlyoutHotkey;
             set
             {
-                _hotkey = value;
-                SettingsService.PlaybackFlyoutHotkey = _hotkey;
-                RaisePropertyChanged(nameof(Hotkey));
-                RaisePropertyChanged(nameof(HotkeyText));
+                _playbackFlyoutHotkey = value;
+                SettingsService.PlaybackFlyoutHotkey = _playbackFlyoutHotkey;
+                RaisePropertyChanged(nameof(PlaybackFlyoutHotkey));
+                RaisePropertyChanged(nameof(PlaybackFlyoutHotkeyText));
             }
         }
 
-        public string HotkeyText => _hotkey.ToString();
-        public string DefaultHotKey => SettingsService.s_defaultPlaybackHotkey.ToString();
+        public string PlaybackFlyoutHotkeyText => _playbackFlyoutHotkey.ToString();
+        public string DefaultPlaybackFlyoutHotKey => SettingsService.s_defaultPlaybackHotkey.ToString();
+
+        SettingsService.HotkeyData _recordingFlyoutHotkey;
+        internal SettingsService.HotkeyData RecordingFlyoutHotkey
+        {
+            get => _recordingFlyoutHotkey;
+            set
+            {
+                _recordingFlyoutHotkey = value;
+                SettingsService.RecordingFlyoutHotkey = _recordingFlyoutHotkey;
+                RaisePropertyChanged(nameof(RecordingFlyoutHotkey));
+                RaisePropertyChanged(nameof(RecordingFlyoutHotkeyText));
+            }
+        }
+
+        public string RecordingFlyoutHotkeyText => _recordingFlyoutHotkey.ToString();
+        public string DefaultRecordingFlyoutHotKey => SettingsService.s_defaultRecordingHotkey.ToString();
+
         public RelayCommand OpenDiagnosticsCommand { get; }
         public RelayCommand OpenAboutCommand { get; }
         public RelayCommand OpenFeedbackCommand { get; }
@@ -35,11 +51,18 @@ namespace EarTrumpet.UI.ViewModels
             set => SettingsService.UseLegacyIcon = value;
         }
 
+        public bool IsMouthTrumpetEnabled
+        {
+            get => SettingsService.IsMouthTrumpetEnabled;
+            set => SettingsService.IsMouthTrumpetEnabled = value;
+        }
+
         public string AboutText { get; private set; }
 
         internal SettingsViewModel()
         {
-            Hotkey = SettingsService.PlaybackFlyoutHotkey;
+            PlaybackFlyoutHotkey = SettingsService.PlaybackFlyoutHotkey;
+            RecordingFlyoutHotkey = SettingsService.RecordingFlyoutHotkey;
             OpenAboutCommand = new RelayCommand(OpenAbout);
             OpenDiagnosticsCommand = new RelayCommand(OpenDiagnostics);
             OpenFeedbackCommand = new RelayCommand(FeedbackService.OpenFeedbackHub);
