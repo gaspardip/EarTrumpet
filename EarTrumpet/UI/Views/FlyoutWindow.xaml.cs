@@ -211,16 +211,12 @@ namespace EarTrumpet.UI.Views
                 var DeviceItemCellHeight = (double)App.Current.Resources["DeviceItemCellHeight"];
                 var DeviceTitleCellHeight = (double)App.Current.Resources["DeviceTitleCellHeight"];
                 var AppItemCellHeight = (double)App.Current.Resources["AppItemCellHeight"];
-
                 var VolumeAppListMargin = (Thickness)App.Current.Resources["VolumeAppListMargin"];
+
                 foreach (var device in _viewModel.Devices)
                 {
                     newHeight += DeviceTitleCellHeight + DeviceItemCellHeight;
-
-                    if (device.Apps.Count > 0)
-                    {
-                        newHeight += VolumeAppListMargin.Bottom + VolumeAppListMargin.Top;
-                    }
+                    newHeight += VolumeAppListMargin.Bottom + VolumeAppListMargin.Top;
 
                     foreach (var app in device.Apps)
                     {

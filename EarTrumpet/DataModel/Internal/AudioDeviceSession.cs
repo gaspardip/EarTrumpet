@@ -212,7 +212,16 @@ namespace EarTrumpet.DataModel.Internal
 
             ReadRawDisplayName();
             RefreshDisplayName();
-            SyncPersistedEndpoint(parent);
+
+            if (parent.Parent.DeviceKind == AudioDeviceKind.Playback)
+            {
+                SyncPersistedEndpoint(parent);
+            }
+            else
+            {
+                // Remove system sounds from microphone devices.
+                _isDisconnected = IsSystemSoundsSession;
+            }
         }
 
         ~AudioDeviceSession()
