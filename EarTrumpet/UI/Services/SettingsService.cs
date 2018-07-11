@@ -24,13 +24,13 @@ namespace EarTrumpet.UI.Services
 
         public static event EventHandler<bool> UseLegacyIconChanged;
 
-        public static readonly HotkeyData s_defaultHotkey = new HotkeyData { Modifiers = Keys.Shift | Keys.Control, Key = System.Windows.Forms.Keys.Q };
+        public static readonly HotkeyData s_defaultPlaybackHotkey = new HotkeyData { Modifiers = Keys.Shift | Keys.Control, Key = System.Windows.Forms.Keys.Q };
 
-        public static HotkeyData Hotkey
+        public static HotkeyData PlaybackFlyoutHotkey
         {
             get
             {
-                var ret = ReadSetting("Hotkey", s_defaultHotkey);
+                var ret = ReadSetting("Hotkey", s_defaultPlaybackHotkey);
                 return ret;
             }
             set

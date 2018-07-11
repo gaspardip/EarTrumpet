@@ -11,9 +11,10 @@ namespace EarTrumpet
 {
     public partial class App
     {
-        private MainViewModel _viewModel;
-        private TrayIcon _trayIcon;
-        private FlyoutWindow _flyoutWindow;
+        private TrayIcon _playbackTrayIcon;
+        private FlyoutWindow _playbackFlyoutWindow;
+        private TrayIcon _recordingTrayIcon;
+        private FlyoutWindow _recordingFlyoutWindow;
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
@@ -28,29 +29,41 @@ namespace EarTrumpet
                 return;
             }
 
+            StartupUWPDialogDisplayService.ShowIfAppropriate();
+
             ((ThemeManager)Resources["ThemeManager"]).SetTheme(ThemeData.GetBrushData());
 
-            var deviceManager = DataModelFactory.CreateAudioDeviceManager(AudioDeviceKind.Playback);
-            DiagnosticsService.Advise(deviceManager);
+            var playbackDeviceManager = DataModelFactory.CreateAudioDeviceManager(AudioDeviceKind.Playback);
+            DiagnosticsService.Advise(playbackDeviceManager);
 
-            _viewModel = new MainViewModel(deviceManager);
-            _viewModel.Ready += MainViewModel_Ready;
+            var playbackViewModel = new MainViewModel(playbackDeviceManager);
+            playbackViewModel.Ready += PlaybackViewModel_Ready;
 
-            _flyoutWindow = new FlyoutWindow(_viewModel, new FlyoutViewModel(_viewModel));
-            _trayIcon = new TrayIcon(new TrayViewModel(_viewModel));
+            _playbackFlyoutWindow = new FlyoutWindow(playbackViewModel, new FlyoutViewModel(playbackViewModel));
+            _playbackTrayIcon = new TrayIcon(new TrayViewModel(playbackViewModel));
 
-            HotkeyService.Register(SettingsService.Hotkey);
-            HotkeyService.KeyPressed += (_, __) => _viewModel.OpenFlyout(FlyoutShowOptions.Keyboard);
+            var recordingDeviceManager = DataModelFactory.CreateAudioDeviceManager(AudioDeviceKind.Recording);
+            DiagnosticsService.Advise(recordingDeviceManager);
 
-            StartupUWPDialogDisplayService.ShowIfAppropriate();
+            var recordingViewModel = new MainViewModel(recordingDeviceManager);
+            recordingViewModel.Ready += RecordingViewModel_Ready;
+
+            _recordingFlyoutWindow = new FlyoutWindow(recordingViewModel, new FlyoutViewModel(recordingViewModel));
+            _recordingTrayIcon = new TrayIcon(new TrayViewModel(recordingViewModel));
 
             Trace.WriteLine($"App Application_Startup Exit");
         }
 
-        private void MainViewModel_Ready(object sender, System.EventArgs e)
+        private void PlaybackViewModel_Ready(object sender, System.EventArgs e)
         {
-            Trace.WriteLine("App Application_Startup MainViewModel_Ready");
-            _trayIcon.Show();
+            Trace.WriteLine("App PlaybackViewModel_Ready");
+            _playbackTrayIcon.Show();
+        }
+
+        private void RecordingViewModel_Ready(object sender, System.EventArgs e)
+        {
+            Trace.WriteLine("App RecordingViewModel_Ready");
+            _recordingTrayIcon.Show();
         }
     }
 }

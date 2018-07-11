@@ -111,7 +111,7 @@ namespace EarTrumpet.UI.Views
 
         private void ViewModel_AppExpanded(object sender, AppExpandedEventArgs e)
         {
-            AppPopup.PositionAndShow(this, e);
+            AppPopup.PositionAndShow(this, _mainViewModel, e);
         }
 
         private void ViewModel_WindowSizeInvalidated(object sender, object e)
@@ -222,7 +222,7 @@ namespace EarTrumpet.UI.Views
                         newHeight += VolumeAppListMargin.Bottom + VolumeAppListMargin.Top;
                     }
 
-                    foreach(var app in device.Apps)
+                    foreach (var app in device.Apps)
                     {
                         newHeight += AppItemCellHeight;
                     }
@@ -242,7 +242,7 @@ namespace EarTrumpet.UI.Views
             double newTop = 0;
             double newLeft = 0;
 
-            switch(taskbarState.Location)
+            switch (taskbarState.Location)
             {
                 case WindowsTaskbar.Position.Left:
                     newLeft = (taskbarState.Size.Right / this.DpiWidthFactor());

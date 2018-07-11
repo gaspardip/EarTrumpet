@@ -17,14 +17,14 @@ namespace EarTrumpet.UI.ViewModels
             set
             {
                 _hotkey = value;
-                SettingsService.Hotkey = _hotkey;
+                SettingsService.PlaybackFlyoutHotkey = _hotkey;
                 RaisePropertyChanged(nameof(Hotkey));
                 RaisePropertyChanged(nameof(HotkeyText));
             }
         }
 
         public string HotkeyText => _hotkey.ToString();
-        public string DefaultHotKey => SettingsService.s_defaultHotkey.ToString();
+        public string DefaultHotKey => SettingsService.s_defaultPlaybackHotkey.ToString();
         public RelayCommand OpenDiagnosticsCommand { get; }
         public RelayCommand OpenAboutCommand { get; }
         public RelayCommand OpenFeedbackCommand { get; }
@@ -39,7 +39,7 @@ namespace EarTrumpet.UI.ViewModels
 
         internal SettingsViewModel()
         {
-            Hotkey = SettingsService.Hotkey;
+            Hotkey = SettingsService.PlaybackFlyoutHotkey;
             OpenAboutCommand = new RelayCommand(OpenAbout);
             OpenDiagnosticsCommand = new RelayCommand(OpenDiagnostics);
             OpenFeedbackCommand = new RelayCommand(FeedbackService.OpenFeedbackHub);

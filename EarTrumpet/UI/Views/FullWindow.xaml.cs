@@ -15,6 +15,7 @@ namespace EarTrumpet.UI.Views
         private static FullWindow Instance;
 
         private FullWindowViewModel _viewModel;
+        private MainViewModel _mainViewModel;
         private bool _isClosing;
 
         public FullWindow(MainViewModel viewModel)
@@ -24,6 +25,7 @@ namespace EarTrumpet.UI.Views
 
             InitializeComponent();
 
+            _mainViewModel = viewModel;
             _viewModel = new FullWindowViewModel(viewModel);
             _viewModel.AppExpanded += ViewModel_AppExpanded;
             _viewModel.AppCollapsed += ViewModel_AppCollapsed;
@@ -92,15 +94,15 @@ namespace EarTrumpet.UI.Views
         {
             Trace.WriteLine("FullWindow ViewModel_AppExpanded");
 
-            AppPopup.PositionAndShow(this, e);
+            AppPopup.PositionAndShow(this, _mainViewModel, e);
         }
 
-        public static void ActivateSingleInstance()
+        public static void ActivateSingleInstance(MainViewModel viewModel)
         {
             Trace.WriteLine("FullWindow ActivateSingleInstance");
             if (Instance == null)
             {
-                var window = new FullWindow(MainViewModel.Instance);
+                var window = new FullWindow(viewModel);
 
                 window.Show();
                 WindowAnimationLibrary.BeginWindowEntranceAnimation(window, () => { });

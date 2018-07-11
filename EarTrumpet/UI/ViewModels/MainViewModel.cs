@@ -1,5 +1,5 @@
 ﻿using EarTrumpet.DataModel;
-using EarTrumpet.Extensions;
+using EarTrumpet.UI.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,14 +12,13 @@ namespace EarTrumpet.UI.ViewModels
 {
     public class MainViewModel : BindableBase
     {
-        public static MainViewModel Instance { get; private set; }
-
         public event EventHandler Ready;
         public event EventHandler<FlyoutShowOptions> FlyoutShowRequested;
-        public event EventHandler<DeviceViewModel> DefaultPlaybackDeviceChanged;
+        public event EventHandler<DeviceViewModel> DefaultDeviceChanged;
 
-        public ObservableCollection<DeviceViewModel> AllDevices { get; private set; }
-        public DeviceViewModel DefaultPlaybackDevice { get; private set; }
+        public ObservableCollection<DeviceViewModel> Devices { get; private set; }
+        public DeviceViewModel DefaultDevice { get; private set; }
+        public AudioDeviceKind DeviceKind => _deviceManager.DeviceKind;
 
         private readonly IAudioDeviceManager _deviceManager;
         private readonly Timer _peakMeterTimer;
@@ -28,41 +27,41 @@ namespace EarTrumpet.UI.ViewModels
 
         internal MainViewModel(IAudioDeviceManager deviceManager)
         {
-            Debug.Assert(Instance == null);
-            Instance = this;
-
-            AllDevices = new ObservableCollection<DeviceViewModel>();
+            Devices = new ObservableCollection<DeviceViewModel>();
 
             _deviceManager = deviceManager;
-            _deviceManager.DefaultChanged += DeviceManager_DefaultPlaybackDeviceChanged;
-            _deviceManager.Loaded += DeviceManager_PlaybackDevicesLoaded;
+            _deviceManager.DefaultChanged += DeviceManager_DefaultDeviceChanged;
+            _deviceManager.Loaded += DeviceManager_Loaded;
             _deviceManager.Devices.CollectionChanged += Devices_CollectionChanged;
             Devices_CollectionChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
             _peakMeterTimer = new Timer(1000 / 30); // 30 fps
             _peakMeterTimer.AutoReset = true;
             _peakMeterTimer.Elapsed += PeakMeterTimer_Elapsed;
+
+            HotkeyService.Register(SettingsService.PlaybackFlyoutHotkey);
+            HotkeyService.KeyPressed += (_, __) => OpenFlyout(FlyoutShowOptions.Keyboard);
         }
 
-        private void DeviceManager_PlaybackDevicesLoaded(object sender, EventArgs e)
+        private void DeviceManager_Loaded(object sender, EventArgs e)
         {
             Ready?.Invoke(this, null);
         }
 
-        private void DeviceManager_DefaultPlaybackDeviceChanged(object sender, IAudioDevice e)
+        private void DeviceManager_DefaultDeviceChanged(object sender, IAudioDevice e)
         {
             if (e == null)
             {
-                DefaultPlaybackDevice = null;
-                DefaultPlaybackDeviceChanged?.Invoke(this, DefaultPlaybackDevice);
+                DefaultDevice = null;
+                DefaultDeviceChanged?.Invoke(this, DefaultDevice);
             }
             else
             {
-                var dev = AllDevices.FirstOrDefault(d => d.Id == e.Id);
+                var dev = Devices.FirstOrDefault(d => d.Id == e.Id);
                 if (dev != null)
                 {
-                    DefaultPlaybackDevice = dev;
-                    DefaultPlaybackDeviceChanged?.Invoke(this, DefaultPlaybackDevice);
+                    DefaultDevice = dev;
+                    DefaultDeviceChanged?.Invoke(this, DefaultDevice);
                 }
             }
         }
@@ -70,7 +69,7 @@ namespace EarTrumpet.UI.ViewModels
         private void AddDevice(IAudioDevice device)
         {
             var newDevice = new DeviceViewModel(_deviceManager, device);
-            AllDevices.Add(newDevice);
+            Devices.Add(newDevice);
         }
 
         private void Devices_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -83,15 +82,15 @@ namespace EarTrumpet.UI.ViewModels
 
                 case NotifyCollectionChangedAction.Remove:
                     var removed = ((IAudioDevice)e.OldItems[0]).Id;
-                    var allExisting = AllDevices.FirstOrDefault(d => d.Id == removed);
+                    var allExisting = Devices.FirstOrDefault(d => d.Id == removed);
                     if (allExisting != null)
                     {
-                        AllDevices.Remove(allExisting);
+                        Devices.Remove(allExisting);
                     }
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    AllDevices.Clear();
+                    Devices.Clear();
                     foreach (var device in _deviceManager.Devices)
                     {
                         AddDevice(device);
@@ -106,14 +105,14 @@ namespace EarTrumpet.UI.ViewModels
         private void PeakMeterTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             // We're in the background so we need to use a snapshot.
-            foreach (var device in AllDevices.ToArray())
+            foreach (var device in Devices.ToArray())
             {
                 device.UpdatePeakValueBackground();
             }
 
             App.Current.Dispatcher.BeginInvoke((Action)(() =>
             {
-                foreach (var device in AllDevices)
+                foreach (var device in Devices)
                 {
                     device.UpdatePeakValueForeground();
                 }
@@ -126,7 +125,7 @@ namespace EarTrumpet.UI.ViewModels
             var apps = new List<IAppItemViewModel>();
             apps.Add(app);
 
-            foreach(var device in AllDevices)
+            foreach(var device in Devices)
             {
                 foreach(var deviceApp in device.Apps)
                 {
@@ -157,8 +156,8 @@ namespace EarTrumpet.UI.ViewModels
             {
                 searchId = _deviceManager.Default.Id;
             }
-            DeviceViewModel oldDevice = AllDevices.First(d => d.Apps.Contains(app));
-            DeviceViewModel newDevice = AllDevices.First(d => searchId == d.Id);
+            DeviceViewModel oldDevice = Devices.First(d => d.Apps.Contains(app));
+            DeviceViewModel newDevice = Devices.First(d => searchId == d.Id);
 
             try
             {

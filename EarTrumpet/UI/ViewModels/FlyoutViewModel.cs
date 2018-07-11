@@ -33,7 +33,7 @@ namespace EarTrumpet.UI.ViewModels
         public event EventHandler<CloseReason> StateChanged = delegate { };
 
         public bool IsExpanded { get; private set; }
-        public bool CanExpand => _mainViewModel.AllDevices.Count > 1;
+        public bool CanExpand => _mainViewModel.Devices.Count > 1;
         public bool IsEmpty => Devices.Count == 0;
         public string ExpandText => CanExpand ? (IsExpanded ? "\ue011" : "\ue010") : "";
         public string ExpandAccessibleText => CanExpand ? (IsExpanded ? Properties.Resources.CollapseAccessibleText : Properties.Resources.ExpandAccessibleText) : "";
@@ -54,8 +54,8 @@ namespace EarTrumpet.UI.ViewModels
 
             _mainViewModel = mainViewModel;
             _mainViewModel.FlyoutShowRequested += (_, options) => OpenFlyout(options);
-            _mainViewModel.DefaultPlaybackDeviceChanged += OnDefaultPlaybackDeviceChanged;
-            _mainViewModel.AllDevices.CollectionChanged += AllDevices_CollectionChanged;
+            _mainViewModel.DefaultDeviceChanged += OnDefaultPlaybackDeviceChanged;
+            _mainViewModel.Devices.CollectionChanged += AllDevices_CollectionChanged;
 
             AllDevices_CollectionChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
@@ -114,12 +114,12 @@ namespace EarTrumpet.UI.ViewModels
                         RemoveDevice(Devices[i].Id);
                     }
 
-                    foreach (var device in _mainViewModel.AllDevices)
+                    foreach (var device in _mainViewModel.Devices)
                     {
                         AddDevice(device);
                     }
 
-                    OnDefaultPlaybackDeviceChanged(null, _mainViewModel.DefaultPlaybackDevice);
+                    OnDefaultPlaybackDeviceChanged(null, _mainViewModel.DefaultDevice);
                     break;
 
                 default:
@@ -151,7 +151,7 @@ namespace EarTrumpet.UI.ViewModels
             }
             else
             {
-                var foundAllDevice = _mainViewModel.AllDevices.FirstOrDefault(d => d.Id == e.Id);
+                var foundAllDevice = _mainViewModel.Devices.FirstOrDefault(d => d.Id == e.Id);
                 if (foundAllDevice != null)
                 {
                     Devices.Clear();
@@ -169,7 +169,7 @@ namespace EarTrumpet.UI.ViewModels
             if (IsExpanded)
             {
                 // Add any that aren't existing.
-                foreach (var device in _mainViewModel.AllDevices)
+                foreach (var device in _mainViewModel.Devices)
                 {
                     if (!Devices.Contains(device))
                     {
@@ -185,7 +185,7 @@ namespace EarTrumpet.UI.ViewModels
                 {
                     var device = Devices[i];
 
-                    if (device.Id != _mainViewModel.DefaultPlaybackDevice?.Id)
+                    if (device.Id != _mainViewModel.DefaultDevice?.Id)
                     {
                         device.Apps.CollectionChanged -= Apps_CollectionChanged;
                         Devices.Remove(device);

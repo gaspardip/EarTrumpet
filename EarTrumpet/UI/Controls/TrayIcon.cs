@@ -18,7 +18,6 @@ namespace EarTrumpet.UI.Controls
     {
         private readonly System.Windows.Forms.NotifyIcon _trayIcon;
         private readonly TrayViewModel _trayViewModel;
-
         public TrayIcon(TrayViewModel trayViewModel)
         {
             _trayViewModel = trayViewModel;
@@ -59,12 +58,12 @@ namespace EarTrumpet.UI.Controls
             });
 
             // Add devices
-            var audioDevices = _trayViewModel.AllDevices.OrderBy(x => x.DisplayName);
+            var audioDevices = _trayViewModel.Devices.OrderBy(x => x.DisplayName);
             if (!audioDevices.Any())
             {
                 cm.Items.Add(new MenuItem
                 {
-                    Header = Resources.ContextMenuNoDevices,
+                    Header = _trayViewModel.ContextMenuNoDevicesText,
                     IsEnabled = false,
                     Style = menuItemStyle
                 });
@@ -86,18 +85,15 @@ namespace EarTrumpet.UI.Controls
             // Static items
             var separatorStyle = (Style)Application.Current.FindResource("MenuItemSeparatorDarkOnly");
 
-            cm.Items.Add(new Separator { Style = separatorStyle });
-            AddItem(Resources.FullWindowTitleText, _trayViewModel.OpenEarTrumpetVolumeMixerCommand);
-            AddItem(Resources.LegacyVolumeMixerText, _trayViewModel.OpenLegacyVolumeMixerCommand);
-            cm.Items.Add(new Separator { Style = separatorStyle });
-            AddItem(Resources.PlaybackDevicesText, _trayViewModel.OpenPlaybackDevicesCommand);
-            AddItem(Resources.RecordingDevicesText, _trayViewModel.OpenRecordingDevicesCommand);
-            AddItem(Resources.SoundsControlPanelText, _trayViewModel.OpenSoundsControlPanelCommand);
-            cm.Items.Add(new Separator { Style = separatorStyle });
-            AddItem(Resources.SettingsWindowText, _trayViewModel.OpenSettingsCommand);
-            AddItem(Resources.ContextMenuSendFeedback, _trayViewModel.OpenFeedbackHubCommand);
-            AddItem(Resources.ContextMenuExitTitle, _trayViewModel.ExitCommand);
+            foreach(var bucket in _trayViewModel.StaticCommands)
+            {
+                cm.Items.Add(new Separator { Style = separatorStyle });
 
+                foreach (var item in bucket)
+                {
+                    AddItem(item.Item1, item.Item2);
+                }
+            }
             return cm;
         }
 

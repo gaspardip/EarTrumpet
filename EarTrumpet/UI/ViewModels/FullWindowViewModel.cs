@@ -9,7 +9,7 @@ namespace EarTrumpet.UI.ViewModels
         public event EventHandler<AppExpandedEventArgs> AppExpanded = delegate { };
         public event EventHandler<object> AppCollapsed = delegate { };
 
-        public ObservableCollection<DeviceViewModel> AllDevices => _mainViewModel.AllDevices;
+        public ObservableCollection<DeviceViewModel> AllDevices => _mainViewModel.Devices;
         public bool IsShowingModalDialog { get; private set; }
 
         MainViewModel _mainViewModel;

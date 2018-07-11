@@ -1,6 +1,6 @@
 ﻿namespace EarTrumpet.DataModel
 {
-    enum AudioDeviceKind
+    public enum AudioDeviceKind
     {
         Playback,
         Recording,

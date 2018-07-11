@@ -1,4 +1,5 @@
-﻿using EarTrumpet.Interop;
+﻿using EarTrumpet.DataModel;
+using EarTrumpet.Interop;
 using EarTrumpet.Properties;
 using EarTrumpet.UI.Helpers;
 using EarTrumpet.UI.Services;
@@ -28,7 +29,8 @@ namespace EarTrumpet.UI.ViewModels
 
         public Icon TrayIcon { get; private set; }
         public string ToolTip { get; private set; }
-        public string DefaultDeviceId => _defaultPlaybackDevice?.Id;
+        public string DefaultDeviceId => _defaultDevice?.Id;
+        public string ContextMenuNoDevicesText => Resources.ContextMenuNoDevices;
         public RelayCommand OpenSettingsCommand { get; }
         public RelayCommand OpenPlaybackDevicesCommand { get; }
         public RelayCommand OpenRecordingDevicesCommand { get; }
@@ -39,15 +41,16 @@ namespace EarTrumpet.UI.ViewModels
         public RelayCommand OpenFeedbackHubCommand { get; }
         public RelayCommand OpenFlyoutCommand { get; }
         public RelayCommand ExitCommand { get; }
+        public IEnumerable<Tuple<string, RelayCommand>>[] StaticCommands { get; }
 
         private readonly string _trayIconPath = Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\SndVolSSO.dll");
         private readonly MainViewModel _mainViewModel;
         private readonly Dictionary<IconId, Icon> _icons = new Dictionary<IconId, Icon>();
         private IconId _currentIcon = IconId.Invalid;
         private bool _useLegacyIcon;
-        private DeviceViewModel _defaultPlaybackDevice;
+        private DeviceViewModel _defaultDevice;
 
-        public ObservableCollection<DeviceViewModel> AllDevices => _mainViewModel.AllDevices;
+        public ObservableCollection<DeviceViewModel> Devices => _mainViewModel.Devices;
 
         internal TrayViewModel(MainViewModel mainViewModel)
         {
@@ -58,7 +61,7 @@ namespace EarTrumpet.UI.ViewModels
             _useLegacyIcon = SettingsService.UseLegacyIcon;
             SettingsService.UseLegacyIconChanged += SettingsService_UseLegacyIconChanged;
 
-            _mainViewModel.DefaultPlaybackDeviceChanged += DeviceManager_DefaultPlaybackDeviceChanged;
+            _mainViewModel.DefaultDeviceChanged += DeviceManager_DefaultPlaybackDeviceChanged;
             DeviceManager_DefaultPlaybackDeviceChanged(this, null);
 
             OpenSettingsCommand = new RelayCommand(SettingsWindow.ActivateSingleInstance);
@@ -66,11 +69,52 @@ namespace EarTrumpet.UI.ViewModels
             OpenRecordingDevicesCommand = new RelayCommand(() => OpenControlPanel("recording"));
             OpenSoundsControlPanelCommand = new RelayCommand(() => OpenControlPanel("sounds"));
             OpenLegacyVolumeMixerCommand = new RelayCommand(StartLegacyMixer);
-            OpenEarTrumpetVolumeMixerCommand = new RelayCommand(FullWindow.ActivateSingleInstance);
+            OpenEarTrumpetVolumeMixerCommand = new RelayCommand(() => FullWindow.ActivateSingleInstance(_mainViewModel));
             ChangeDeviceCommand = new RelayCommand<DeviceViewModel>((device) => device.MakeDefaultPlaybackDevice());
             OpenFeedbackHubCommand = new RelayCommand(FeedbackService.OpenFeedbackHub);
             OpenFlyoutCommand = new RelayCommand(() => _mainViewModel.OpenFlyout(FlyoutShowOptions.Pointer));
             ExitCommand = new RelayCommand(App.Current.Shutdown);
+
+            var staticCommands = new List<List<Tuple<string, RelayCommand>>>();
+
+            if (_mainViewModel.DeviceKind == AudioDeviceKind.Recording)
+            {
+                staticCommands.Add(new List<Tuple<string, RelayCommand>>()
+                {
+                    new Tuple<string,RelayCommand>(Resources.FullWindowTitleText, OpenEarTrumpetVolumeMixerCommand),
+                });
+                staticCommands.Add(new List<Tuple<string, RelayCommand>>()
+                {
+                    new Tuple<string,RelayCommand>(Resources.RecordingDevicesText, OpenRecordingDevicesCommand),
+                });
+                staticCommands.Add(new List<Tuple<string, RelayCommand>>()
+                {
+                    new Tuple<string,RelayCommand>(Resources.SettingsWindowText, OpenSettingsCommand),
+                    new Tuple<string,RelayCommand>(Resources.ContextMenuSendFeedback, OpenFeedbackHubCommand),
+                    new Tuple<string,RelayCommand>(Resources.ContextMenuExitTitle, ExitCommand),
+                });
+            }
+            else
+            {
+                staticCommands.Add(new List<Tuple<string, RelayCommand>>()
+                {
+                    new Tuple<string,RelayCommand>(Resources.FullWindowTitleText, OpenEarTrumpetVolumeMixerCommand),
+                    new Tuple<string,RelayCommand>(Resources.LegacyVolumeMixerText, OpenLegacyVolumeMixerCommand),
+                });
+                staticCommands.Add(new List<Tuple<string, RelayCommand>>()
+                {
+                    new Tuple<string,RelayCommand>(Resources.PlaybackDevicesText, OpenPlaybackDevicesCommand),
+                    new Tuple<string,RelayCommand>(Resources.RecordingDevicesText, OpenRecordingDevicesCommand),
+                    new Tuple<string,RelayCommand>(Resources.SoundsControlPanelText, OpenSoundsControlPanelCommand),
+                });
+                staticCommands.Add(new List<Tuple<string, RelayCommand>>()
+                {
+                    new Tuple<string,RelayCommand>(Resources.SettingsWindowText, OpenSettingsCommand),
+                    new Tuple<string,RelayCommand>(Resources.ContextMenuSendFeedback, OpenFeedbackHubCommand),
+                    new Tuple<string,RelayCommand>(Resources.ContextMenuExitTitle, ExitCommand),
+                });
+            }
+            StaticCommands = staticCommands.ToArray();
         }
 
         private void LoadIconResources()
@@ -103,16 +147,16 @@ namespace EarTrumpet.UI.ViewModels
 
         private void DeviceManager_DefaultPlaybackDeviceChanged(object sender, DeviceViewModel e)
         {
-            if (_defaultPlaybackDevice != null)
+            if (_defaultDevice != null)
             {
-                _defaultPlaybackDevice.PropertyChanged -= DefaultPlaybackDevice_PropertyChanged;
+                _defaultDevice.PropertyChanged -= DefaultPlaybackDevice_PropertyChanged;
             }
 
-            _defaultPlaybackDevice = e;
+            _defaultDevice = e;
 
-            if (_defaultPlaybackDevice != null)
+            if (_defaultDevice != null)
             {
-                _defaultPlaybackDevice.PropertyChanged += DefaultPlaybackDevice_PropertyChanged;
+                _defaultDevice.PropertyChanged += DefaultPlaybackDevice_PropertyChanged;
             }
 
             DefaultPlaybackDevice_PropertyChanged(sender, null);
@@ -134,19 +178,24 @@ namespace EarTrumpet.UI.ViewModels
         {
             IconId desiredIcon = IconId.OriginalIcon;
 
+            if (_mainViewModel.DeviceKind == AudioDeviceKind.Recording)
+            {
+                // TODO: microphone icon
+                desiredIcon = IconId.OriginalIcon;
+            }
             if (_useLegacyIcon)
             {
                 desiredIcon = IconId.OriginalIcon;
             }
             else
             {
-                int volume = _defaultPlaybackDevice != null ? _defaultPlaybackDevice.Volume : 0;
+                int volume = _defaultDevice != null ? _defaultDevice.Volume : 0;
 
-                if (_defaultPlaybackDevice == null)
+                if (_defaultDevice == null)
                 {
                     desiredIcon = IconId.NoDevice;
                 }
-                else if (_defaultPlaybackDevice.IsMuted)
+                else if (_defaultDevice.IsMuted)
                 {
                     desiredIcon = IconId.Muted;
                 }
@@ -178,25 +227,27 @@ namespace EarTrumpet.UI.ViewModels
 
         internal void ToggleMute()
         {
-            if (_defaultPlaybackDevice != null)
+            if (_defaultDevice != null)
             {
-                _defaultPlaybackDevice.IsMuted = !_defaultPlaybackDevice.IsMuted;
+                _defaultDevice.IsMuted = !_defaultDevice.IsMuted;
             }
         }
 
         private void UpdateToolTip()
         {
             string toolTipText;
-            if (_defaultPlaybackDevice != null)
+            if (_defaultDevice != null)
             {
+                // TODO: need text
                 var otherText = "EarTrumpet: 100% - ";
-                var dev = _defaultPlaybackDevice.DisplayName;
+                var dev = _defaultDevice.DisplayName;
                 // API Limitation: "less than 64 chars" for the tooltip.
                 dev = dev.Substring(0, Math.Min(63 - otherText.Length, dev.Length));
-                toolTipText = $"EarTrumpet: {_defaultPlaybackDevice.Volume}% - {dev}";
+                toolTipText = $"EarTrumpet: {_defaultDevice.Volume}% - {dev}";
             }
             else
             {
+                // TODO: need resource
                 toolTipText = Resources.NoDeviceTrayText;
             }
 
