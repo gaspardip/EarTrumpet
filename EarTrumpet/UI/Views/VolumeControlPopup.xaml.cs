@@ -101,7 +101,9 @@ namespace EarTrumpet.UI.Views
                 moveMenu.Items.Add(newItem);
             }
 
-            var defaultItem = new MenuItem { Header = EarTrumpet.Properties.Resources.DefaultDeviceText };
+            var defaultItem = new MenuItem { Header = _viewModel.DeviceKind == DataModel.AudioDeviceKind.Playback ?
+                EarTrumpet.Properties.Resources.DefaultDeviceText : EarTrumpet.Properties.Resources.DefaultRecordingDeviceText
+            };
             if (_useDarkTheme)
             {
                 defaultItem.Style = menuItemStyle;

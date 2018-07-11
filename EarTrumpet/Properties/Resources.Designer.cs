@@ -160,6 +160,15 @@ namespace EarTrumpet.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Always use the default recording device.
+        /// </summary>
+        public static string DefaultRecordingDeviceText {
+            get {
+                return ResourceManager.GetString("DefaultRecordingDeviceText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Expand to show all playback devices.
         /// </summary>
         public static string ExpandAccessibleText {
